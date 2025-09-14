@@ -176,6 +176,7 @@ target/
 dbt_packages/
 .dbt_profile.yml
 logs/
+/dbt
 
 # Airflow
 logs/
