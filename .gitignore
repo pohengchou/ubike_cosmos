@@ -176,7 +176,6 @@ target/
 dbt_packages/
 .dbt_profile.yml
 logs/
-/dbt
 
 # Airflow
 logs/
@@ -195,3 +194,26 @@ venv.bak/
 # Spyder project settings
 .spyderproject
 .sp
+
+
+# Astro CLI and Docker
+.astro/
+.dockerignore
+.gitignore
+airflow_settings.yaml
+
+# Python specific
+__pycache__/
+*.pyc
+.env
+.mypy_cache/
+.pytest_cache/
+
+# dbt specific
+dbt_packages/
+target/
+profiles.yml
+
+# IDE specific
+.vscode/
+.idea/
