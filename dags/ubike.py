@@ -1,5 +1,6 @@
 from airflow.sdk import asset,Asset,Context
 from airflow.providers.google.cloud.hooks.gcs import GCSHook
+from airflow.models import Variable
 from datetime import datetime
 from zoneinfo import ZoneInfo
 import time 
@@ -7,9 +8,8 @@ import json
 import pendulum
 
 #GCS相關設定
-GCS_BUCKET_NAME="ubike-471005-data-lake"
 GCS_CONN_ID="gcp_bucket"
-
+gcs_bucket = Variable.get("GCS_BUCKET_NAME")
 
 weather_data_asset = Asset("weather://data-updated")
 
@@ -58,13 +58,13 @@ def load_ubike_data_to_gcs(context:Context,fetch_ubike:Asset):
         file_path = now.strftime("ubike_raw/%Y/%m/%d/%Y%m%d_%H%M%S.json")
 
         gcs_hook.upload(
-            bucket_name=GCS_BUCKET_NAME,
+            bucket_name=gcs_bucket,
             object_name=file_path,
             data=json.dumps(ubike_data, ensure_ascii=False).encode('utf-8'),
             mime_type="application/json; charset=utf-8"
         )
         
-        print(f"原始 Ubike 資料已成功上傳至 gs://{GCS_BUCKET_NAME}/{file_path}")
+        print(f"原始 Ubike 資料已成功上傳至 gs://{gcs_bucket}/{file_path}")
     except Exception as e:
         print(f"上傳資料至 GCS 失敗: {e}")
         raise
