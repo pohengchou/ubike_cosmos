@@ -20,5 +20,7 @@ airflow:
       pool_slot:
       pool_description:
   variables:
-    - variable_name:
-      variable_value:
+    - variable_name: GCS_BUCKET_NAME
+      variable_value: "ubike-471005-data-lake" # <-- 你的 Bucket 名稱
+    - variable_name: BIGQUERY_STAGING_DATASET
+      variable_value: "ubike_staging" # <-- 你的資料集名稱
