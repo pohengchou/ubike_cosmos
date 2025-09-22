@@ -12,7 +12,7 @@ from airflow.providers.google.cloud.hooks.gcs import GCSHook
 
 @dag(
     start_date=pendulum.datetime(2025, 9, 18, tz="Asia/Taipei"),
-    schedule="@daily",
+    schedule="0 5 * * *",
     catchup=False,
     tags=["dbt", "data_ingestion"],
 )
