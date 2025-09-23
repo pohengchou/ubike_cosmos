@@ -1,0 +1,33 @@
+version: 2
+
+models:
+  - name: fact_ubike_status
+    description: "這個事實表包含了每個時間點 YouBike 站點的租借狀態。"
+    columns:
+      - name: Surrogate_Key
+        description: "這個事實表的主鍵，由站點ID與資料更新時間組合而成。"
+        tests:
+          - unique
+          - not_null
+      - name: station_id_key
+        description: "外來鍵，用來連接 dim_ubike_stations 維度表。"
+        tests:
+          - not_null
+      - name: api_request_at
+        description: "發出 API 請求的時間戳記。"
+        tests:
+          - not_null
+      - name: data_updated_at
+        description: "資料實際更新的時間戳記。"
+      - name: available_bikes
+        description: "可用租借的自行車總數。"
+      - name: empty_docks
+        description: "可停車的空車位總數。"
+      - name: total_docks
+        description: "站點的總車位數。"
+      - name: electric_bikes
+        description: "可用租借的電動自行車數。"
+      - name: normal_bikes
+        description: "可用租借的普通自行車數。"
+      - name: is_active
+        description: "表示站點目前是否正在運作的布林值。"

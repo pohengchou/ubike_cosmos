@@ -1,0 +1,11 @@
+version: 2
+
+models:
+  - name: dim_ubike_stations
+    description: "這個維度表包含了每個 YouBike 站點的唯一資訊。"
+    columns:
+      - name: station_id
+        description: "這是維度表的主鍵。它是一個從業務鍵 station_id 衍生而來的代理鍵。"
+        tests:
+          - unique
+          - not_null

@@ -1,0 +1,49 @@
+version: 2
+
+models:
+  - name: fact_weather
+    description: "一個每日天氣觀測數據的事實表。每一行代表一個特定時間、特定地點的天氣觀測結果。"
+    columns:
+      - name: surrogate_key
+        description: "觀測記錄的唯一代理鍵。"
+        tests:
+          - unique
+          - not_null
+
+      - name: weather_station_id_key
+        description: "氣象站的唯一識別碼，用於連接至 dim_weather_stations 維度表。"
+        tests:
+          - not_null
+          # 確保事實表中的站點ID都存在於維度表中
+          - relationships:
+              to: ref('dim_weather_stations')
+              field: station_id
+
+      - name: observation_timestamp
+        description: "觀測記錄的時間戳，也是事實表的分區鍵。"
+        tests:
+          - not_null
+
+      - name: air_temperature
+        description: "攝氏溫度。"
+
+      - name: air_pressure
+        description: "氣壓（百帕）。"
+
+      - name: relative_humidity
+        description: "相對濕度（%）。"
+
+      - name: wind_speed
+        description: "風速（公尺/秒）。"
+
+      - name: precipitation
+        description: "日累積降水量（毫米）。"
+
+      - name: weather_description
+        description: "天氣狀況的描述。"
+
+      - name: daily_low_temp
+        description: "當日最低溫度（攝氏）。"
+
+      - name: daily_high_temp
+        description: "當日最高溫度（攝氏）。"

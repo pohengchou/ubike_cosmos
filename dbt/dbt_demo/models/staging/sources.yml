@@ -1,0 +1,220 @@
+version: 2
+
+sources:
+  - name: ubike_staging # dbt 專案中這個資料集的邏輯名稱
+    description: "從 GCS 載入到 BigQuery Staging 資料集的 Ubike 原始資料。"
+    database: ubike-471005 # 你的 GCP 專案 ID
+    schema: ubike_staging # 你的 BigQuery Staging 資料集 ID
+
+    tables:
+      # Ubike 原始資料表：ubike_staging.raw_ubike_data
+      - name: raw_ubike_data # Ubike 資料表的實際名稱
+        description: "來自 API 的 Ubike 站點即時狀態原始資料。"
+        
+        columns:
+          - name: updated_at
+            description: "資料被載入 BigQuery 的時間戳記。"
+            tests:
+              - not_null
+          
+          - name: retCode
+            description: "API 回應的狀態碼。"
+          
+          - name: retVal # RECORD, REPEATED
+            description: "包含多個 Ubike 站點詳細資訊的紀錄陣列。"
+            # retVal 的子欄位定義在下一層的 columns 中，在 dbt model 中會透過 UNNEST 展開
+            # 這些是 retVal RECORD 內部包含的子欄位
+            columns: # retVal 內部子欄位
+              - name: scityen
+                description: "城市英文名稱 (此站點所屬的城市)。" # 修正描述，更精確
+              - name: sareaen
+                description: "區域英文名稱 (此站點所屬的區域)。" # 修正描述，更精確
+              - name: scity
+                description: "城市中文名稱 (此站點所屬的城市)。" # 修正描述，更精確
+              - name: sarea
+                description: "區域中文名稱 (此站點所屬的區域)。" # 修正描述，更精確
+              - name: sbi_detail 
+                description: "自行車可用性細節的巢狀紀錄 (此站點的資訊)。" # 修正描述
+                columns: 
+                  - name: yb2
+                    description: "可用 YouBike 2.0 數量。" # 根據之前對 yb2 的理解，更精確
+                  - name: eyb
+                    description: "可用 YouBike E-bike 數量。" # 根據 eyb 的命名，更精確
+              - name: mday
+                description: "數據收集日期與時間 (通常為 YYYYMMDDHHMMSS 格式)。需要轉換為 TIMESTAMP。"
+                tests:
+                  - not_null
+              - name: bemp
+                description: "可停空位數量。"
+              - name: snaen
+                description: "站點英文名稱。"
+              - name: sna
+                description: "Ubike 站點中文名稱。"
+                tests:
+                  - not_null
+              - name: tot
+                description: "總停車格位數。"
+              - name: lng
+                description: "站點經度。"
+                tests:
+                  - not_null
+              - name: aren
+                description: "站點地址英文版。"
+              - name: sbi
+                description: "可借自行車數量。"
+              - name: lat
+                description: "站點緯度。"
+              - name: act
+                description: "營運狀態 (例如 1 為營運中，0 為未營運)。"
+              - name: sno
+                description: "Ubike 站點編號。"
+                tests:
+                  - not_null
+              - name: ar
+                description: "站點地址中文版。"
+
+
+
+
+      # 天氣原始資料表：ubike_staging.raw_weather_data
+      - name: raw_weather_data # 天氣資料表的實際名稱
+        description: "來自中央氣象局的即時天氣觀測原始資料 (已初步清理)。"
+        
+        columns:
+          # WeatherElement 結構
+          - name: WeatherElement
+            description: "氣象元素詳細資訊的巢狀紀錄。"
+            columns: # WeatherElement 內部子欄位
+              - name: VisibilityDescription # STRING
+                description: "能見度描述。缺失值可能表示為 -99。"
+              - name: SunshineDuration # FLOAT
+                description: "日照時數 (小時)。缺失值可能表示為 -99。"
+              - name: RelativeHumidity # INTEGER
+                description: "相對濕度 (百分比)。"
+                tests:
+                  - not_null
+                  - dbt_expectations.expect_column_values_to_be_between: # 範例：範圍測試
+                      min_value: 0
+                      max_value: 100
+              - name: UVIndex # INTEGER
+                description: "紫外線指數。"
+              
+              # Max10MinAverage 結構 (在 WeatherElement 內)
+              - name: Max10MinAverage # RECORD
+                description: "最近10分鐘內最大平均值的巢狀紀錄。"
+                columns: # Max10MinAverage 內部子欄位
+                  - name: Occurred_at # RECORD
+                    description: "最大平均值發生時間的巢狀紀錄。"
+                    columns: # Occurred_at 內部子欄位
+                      - name: WindDirection # FLOAT
+                        description: "最大平均值發生時的風向 (角度)。"
+                      - name: DateTime # STRING
+                        description: "最大平均值發生的日期和時間 (字串格式)。"
+                  - name: WindSpeed # FLOAT
+                    description: "最近10分鐘內最大平均風速 (公尺/秒)。"
+          
+          # 以下是 DailyExtreme 結構，它與 WeatherElement 平行（頂層巢狀）
+          - name: DailyExtreme # RECORD
+            description: "每日極端值的巢狀紀錄。"
+            columns: # DailyExtreme 內部子欄位
+              # DailyHigh 結構
+              - name: DailyHigh # RECORD
+                description: "每日最高值的巢狀紀錄。"
+                columns: # DailyHigh 內部子欄位
+                  - name: TemperatureInfo # RECORD
+                    description: "最高溫度的相關資訊。"
+                    columns: # TemperatureInfo 內部子欄位
+                      - name: AirTemperature # FLOAT
+                        description: "每日最高氣溫 (攝氏)。"
+                      - name: Occurred_at # RECORD
+                        description: "最高溫發生時間的巢狀紀錄。"
+                        columns: # Occurred_at 內部子欄位
+                          - name: DateTime # STRING
+                            description: "最高溫發生的日期和時間 (字串格式)。"
+              # DailyLow 結構
+              - name: DailyLow # RECORD
+                description: "每日最低值的巢狀紀錄。"
+                columns: # DailyLow 內部子欄位
+                  - name: TemperatureInfo # RECORD
+                    description: "最低溫度的相關資訊。"
+                    columns: # TemperatureInfo 內部子欄位
+                      - name: AirTemperature # FLOAT
+                        description: "每日最低氣溫 (攝氏)。"
+                      - name: Occurred_at # RECORD
+                        description: "最低溫發生時間的巢狀紀錄。"
+                        columns: # Occurred_at 內部子欄位
+                          - name: DateTime # STRING
+                            description: "最低溫發生的日期和時間 (字串格式)。"
+          
+          - name: AirPressure # FLOAT
+            description: "氣壓 (百帕)。"
+          
+          # GustInfo 結構
+          - name: GustInfo # RECORD
+            description: "陣風資訊的巢狀紀錄。"
+            columns: # GustInfo 內部子欄位
+              - name: PeakGustSpeed # FLOAT
+                description: "最大陣風風速 (公尺/秒)。"
+              - name: Occurred_at # RECORD
+                description: "最大陣風發生時間的巢狀紀錄。"
+                columns: # Occurred_at 內部子欄位
+                  - name: WindDirection # FLOAT
+                    description: "最大陣風發生時的風向 (角度)。"
+                  - name: DateTime # STRING
+                    description: "最大陣風發生的日期和時間 (字串格式)。"
+          
+          - name: Weather
+            description: "天氣狀況描述 (例如 '晴', '多雲' 等)。"
+          
+          # Now 結構
+          - name: Now # RECORD
+            description: "當前狀況的巢狀紀錄。"
+            columns: # Now 內部子欄位
+              - name: Precipitation # FLOAT
+                description: "當前降水量 (毫米)。"
+
+          - name: StationName
+            description: "氣象測站名稱。"
+            tests:
+              - not_null
+          - name: StationId
+            description: "氣象測站的唯一識別碼。"
+            tests:
+              - not_null
+          
+          - name: ObsTime # RECORD
+            description: "觀測時間的巢狀紀錄。"
+            columns: # ObsTime 內部子欄位
+              - name: DateTime # TIMESTAMP
+                description: "氣象觀測的精確日期和時間。"
+                tests:
+                  - not_null
+
+          - name: GeoInfo # RECORD
+            description: "地理位置資訊的巢狀紀錄。"
+            columns: # GeoInfo 內部子欄位
+              - name: Coordinates # RECORD, REPEATED
+                description: "包含多個座標點的紀錄陣列。"
+                columns: # Coordinates 內部子欄位
+                  - name: StationLongitude # FLOAT
+                    description: "測站經度。"
+                    tests:
+                      - not_null
+                  - name: CoordinateFormat # STRING
+                    description: "座標格式描述。"
+                  - name: StationLatitude # FLOAT
+                    description: "測站緯度。"
+                    tests:
+                      - not_null
+                  - name: CoordinateName # STRING
+                    description: "座標名稱。"
+              - name: CountyName # STRING
+                description: "縣市名稱。"
+              - name: StationAltitude # FLOAT
+                description: "測站海拔高度 (公尺)。"
+              - name: CountyCode # INTEGER
+                description: "縣市代碼。"
+              - name: TownName # STRING
+                description: "鄉鎮名稱。"
+              - name: TownCode # INTEGER
+                description: "鄉鎮代碼。"

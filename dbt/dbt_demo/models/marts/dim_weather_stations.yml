@@ -1,0 +1,41 @@
+version: 2
+
+models:
+  - name: dim_weather_stations
+    description: "一個包含獨特氣象站資訊的維度表。"
+    columns:
+      - name: station_id
+        description: "氣象站的唯一識別碼。"
+        tests:
+          - unique
+          - not_null
+
+      - name: station_name
+        description: "氣象站名稱。"
+        tests:
+          - not_null
+      
+      - name: county_name
+        description: "氣象站所在的縣市名稱。"
+        tests:
+          - not_null
+
+      - name: town_name
+        description: "氣象站所在的鄉鎮區名稱。"
+        tests:
+          - not_null
+
+      - name: station_altitude
+        description: "氣象站的海拔高度（公尺）。"
+        tests:
+          - not_null
+      
+      - name: latitude
+        description: "氣象站的緯度座標。"
+        tests:
+          - not_null
+      
+      - name: longitude
+        description: "氣象站的經度座標。"
+        tests:
+          - not_null

@@ -1,0 +1,17 @@
+models:
+  - name: stg_ubike_staging__raw_ubike_data
+    columns:
+      - name: station_id
+        tests:
+          - not_null
+      - name: available_bikes
+        tests:
+          - not_null
+
+
+  
+  - name: stg_ubike_staging__raw_weather_data
+    columns:
+      - name: station_id
+        tests:
+          - not_null
