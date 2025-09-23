@@ -32,5 +32,5 @@ my_dag=DbtDag(
     execution_config=_execution_config,
     schedule="0 6 * * *",
     start_date=datetime(2025,1,1),
-    max_active_tasks=2
+    max_active_tasks=4
 )
