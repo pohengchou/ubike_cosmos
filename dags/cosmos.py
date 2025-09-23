@@ -8,8 +8,8 @@ from airflow.sdk import dag, task, Context
 from airflow.models import Variable
 from airflow.providers.google.cloud.transfers.gcs_to_bigquery import GCSToBigQueryOperator
 from airflow.providers.google.cloud.hooks.gcs import GCSHook
-from cosmos.operators import DbtBuildOperator
 from cosmos import ProjectConfig, ProfileConfig, ExecutionConfig
+from cosmos.airflow.task_group import DbtTaskGroup
 from cosmos.profiles import GoogleCloudServiceAccountFileProfileMapping
 
 # DBT 配置常數
@@ -19,11 +19,11 @@ BIGQUERY_DATASET = "ubike_471005_data_warehouse"
 KEYFILE_PATH = "/usr/local/airflow/include/keys/service_account.json"
 
 # Cosmos 配置
-project_config = ProjectConfig(
+_project_config = ProjectConfig(
     dbt_project_path=DBT_PROJECT_PATH
 )
 
-profile_config = ProfileConfig(
+_profile_config = ProfileConfig(
     profile_name="dbt_demo",
     target_name="dev",
     profile_mapping=GoogleCloudServiceAccountFileProfileMapping(
@@ -36,7 +36,7 @@ profile_config = ProfileConfig(
     )
 )
 
-execution_config = ExecutionConfig(
+_execution_config = ExecutionConfig(
     dbt_executable_path=DBT_EXECUTABLE_PATH
 )
 
@@ -51,7 +51,7 @@ def integrated_data_pipeline():
     """
     整合的資料管道 DAG：
     1. 每日從 GCS 載入 Ubike 和天氣資料到 BigQuery staging
-    2. 執行 dbt 轉換建立資料倉儲
+    2. 執行 dbt 轉換建立資料倉儲（顯示詳細的 model 執行狀態）
     """
     
     # 從 Airflow Variables 讀取設定
@@ -131,15 +131,18 @@ def integrated_data_pipeline():
         autodetect=True,
     )
     
-    # === 第二階段：dbt 轉換 ===
+    # === 第二階段：dbt 轉換（顯示詳細 lineage） ===
     
-    # 4. dbt build - 執行所有 models 和 tests
-    dbt_build = DbtBuildOperator(
-        task_id="dbt_build",
-        project_dir=DBT_PROJECT_PATH,
-        project_config=project_config,
-        profile_config=profile_config,
-        execution_config=execution_config,
+    # 4. 使用 DbtTaskGroup 顯示所有 dbt models 的詳細執行狀態
+    dbt_models = DbtTaskGroup(
+        group_id="dbt_transformation",
+        project_config=_project_config,
+        profile_config=_profile_config,
+        execution_config=_execution_config,
+        operator_args={
+            "install_deps": True,
+            "full_refresh": False,
+        },
     )
     
     # === 任務依賴設定 ===
@@ -150,8 +153,8 @@ def integrated_data_pipeline():
     clean_files_task >> load_cleaned_weather_data
     
     # 主要資料流程依賴
-    # 兩個載入任務完成後，才執行 dbt build
-    [load_ubike_data, load_cleaned_weather_data] >> dbt_build
+    # 兩個載入任務完成後，才執行 dbt 轉換群組
+    [load_ubike_data, load_cleaned_weather_data] >> dbt_models
 
 # 實例化 DAG
 integrated_data_pipeline()
