@@ -33,4 +33,4 @@
 | :--- | :--- |
 | **`Dockerfile`** | 建立 $\text{dbt}$ 專案所需的 $\text{Python}$ 虛擬環境。 |
 | **`requirements.txt`** | 安裝運行 $\text{Airflow}$ 任務所需的所有 $\text{Python}$ 套件。 |
-| **`airflow_settings.yaml`** | **配置連線**：定義 $\text{gcp\_bucket}$ 連線 $\text{ID}$，並安全地將 $\text{GCS\_BUCKET\_NAME}$ 等敏感資訊儲存在 **$\text{Airflow Variables}$** 中，供 $\text{DAG}$ 使用。 |
+| **`airflow_settings.yaml`** | **配置連線**：定義 gcp連線，並設定Airflow Variables ，供 DAG 使用。 |
