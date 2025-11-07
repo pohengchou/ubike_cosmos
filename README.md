@@ -1,6 +1,6 @@
 # ✨ 整合式 ELT 管道架構 (Dataproc & dbt Cosmos)
 
-本專案旨在建立一個穩固、高效且可監控的端到端 ELT (Extract, Load, Transform) 數據管道。我們使用 **Apache Airflow** 進行調度，利用 **Google Dataproc** 進行數據清洗，並採用 **dbt Cosmos** 框架實現數據倉儲的無縫建模。
+本專案旨在建立一個穩固、高效且可監控的端到端 ELT (Extract, Load, Transform) 數據管道。我們使用 **Apache Airflow** 進行調度，利用 **Google Dataproc** 暫時叢集進行數據預清洗(轉成Parquet)，並採用 **dbt Cosmos** 框架實現數據倉儲的無縫建模。
 
 ## 🌊 Apache Airflow & Cosmos - ELT 協作層
 
