@@ -1,12 +1,13 @@
 {{ config(
     materialized='incremental',
-    incremental_strategy='insert_overwrite',
+    incremental_strategy='merge',
+    unique_key=['observation_timestamp', 'weather_station_id_key'],
     partition_by={
       "field": "observation_timestamp",
       "data_type": "timestamp",
       "granularity": "day"
     },
-    cluster_by=['weather_station_id_key']
+    cluster_by=['weather_station_id_key', 'observation_timestamp']
 ) }}
 
 SELECT
@@ -31,7 +32,12 @@ SELECT
 
     -- 每日極值
     daily_low_temp,
-    daily_high_temp
+    daily_high_temp,
+
+    max_10min_avg_wind_at, --10 分鐘平均風速最大值發生時間
+    gust_occurred_at,   --瞬間最大陣風發生時間
+    daily_high_temp_at, --當日最高氣溫發生時間
+    daily_low_temp_at  --當日最低氣溫發生時間
 
 
 FROM {{ref('stg_ubike_staging__raw_weather_data')}}

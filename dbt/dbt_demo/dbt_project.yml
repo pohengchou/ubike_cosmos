@@ -38,8 +38,8 @@ clean-targets:         # directories to be removed by `dbt clean`
 models:
   ubike_project:
     staging:
-      +materialized: view
+      +materialized: ephemeral
     processing:
-      +materialized: view
+      +materialized: ephemeral
     marts:
       +materialized: table

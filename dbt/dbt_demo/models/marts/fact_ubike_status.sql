@@ -1,12 +1,13 @@
 {{ config(
     materialized='incremental',
-    incremental_strategy='insert_overwrite',
+    incremental_strategy='merge',
+    unique_key=['api_request_at', 'station_id_key'], 
     partition_by={
       "field": "api_request_at",
       "data_type": "timestamp",
       "granularity": "day"
     },
-    cluster_by=['station_id_key']
+    cluster_by=['station_id_key', 'api_request_at'] 
 ) }}
 
 SELECT

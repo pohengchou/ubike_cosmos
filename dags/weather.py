@@ -7,8 +7,7 @@ from zoneinfo import ZoneInfo
 import json
 
 #GCS相關設定
-GCS_BUCKET_NAME="ubike-471005-data-lake"
-GCS_CONN_ID="gcp_bucket"
+GCS_BUCKET_NAME=Variable.get("GCS_BUCKET_NAME")
 
 #天氣API相關設定
 WEATHER_API="https://opendata.cwa.gov.tw/fileapi/v1/opendataapi/O-A0003-001?Authorization=CWA-E452AA68-C52D-4D00-8C1B-314DEF3F5DA2&downloadType=WEB&format=JSON"
@@ -64,7 +63,7 @@ def fetch_weather():
         # 格式為 'ubike_raw/年/月/日/時間戳.json'
         # 例如：'ubike_raw/2025/09/10/20250910_172300.json'
         file_path = now.strftime("weather_raw/%Y/%m/%d/%Y%m%d_%H%M%S.json")
-        gcs_hook=GCSHook(gcp_conn_id=GCS_CONN_ID)
+        gcs_hook=GCSHook()
         gcs_hook.upload(
             bucket_name=GCS_BUCKET_NAME,
             object_name=file_path,

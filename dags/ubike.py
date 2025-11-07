@@ -8,7 +8,6 @@ import json
 import pendulum
 
 #GCS相關設定
-GCS_CONN_ID="gcp_bucket"
 gcs_bucket = Variable.get("GCS_BUCKET_NAME")
 
 weather_data_asset = Asset("weather://data-updated")
@@ -48,7 +47,7 @@ def load_ubike_data_to_gcs(context:Context,fetch_ubike:Asset):
     try:
         ubike_data=context["inlet_events"][fetch_ubike][-1].source_task_instance.xcom_pull(
         )
-        gcs_hook = GCSHook(gcp_conn_id=GCS_CONN_ID)
+        gcs_hook = GCSHook()
         
         # 取得目前的日期和時間，並設定時區為台北
         now = datetime.now(ZoneInfo("Asia/Taipei"))

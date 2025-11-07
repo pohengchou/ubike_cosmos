@@ -5,22 +5,38 @@
 # For questions, reach out to: https://support.astronomer.io
 # For issues create an issue ticket here: https://github.com/astronomer/astro-cli/issues
 
-# ... (其他 Airflow 設定)
-
 airflow:
   connections:
-    - conn_id: gcp_bucket
+    - conn_id: google_cloud_default  # 建議使用一個有意義的 ID
       conn_type: google_cloud_platform
       conn_extra:
+        # 指定金鑰檔案在 'Airflow 容器內' 的絕對路徑
         keyfile_path: /usr/local/airflow/include/keys/service_account.json
-          
-# ... (其他連線或設定)
+
+    - conn_id: slack_default
+      conn_type: slack
+      conn_password: 
+
   pools:
     - pool_name:
       pool_slot:
       pool_description:
+
   variables:
     - variable_name: GCS_BUCKET_NAME
-      variable_value: "ubike-471005-data-lake" # <-- 你的 Bucket 名稱
+      variable_value: ubike-471005-data-lake
     - variable_name: BIGQUERY_STAGING_DATASET
-      variable_value: "ubike_staging" # <-- 你的資料集名稱
+      variable_value: ubike_staging
+    - variable_name: BIGQUERY_DATAWAREHOUSE_DATASET
+      variable_value: ubike_471005_data_warehouse
+    - variable_name: PROJECT_ID
+      variable_value: ubike-471005
+    - variable_name: GCP_REGION
+      variable_value: asia-east1
+    - variable_name: SERVICE_ACCOUNT_EMAIL
+      variable_value: airflow-service-account@ubike-471005.iam.gserviceaccount.com
+    - variable_name: PYSPARK_JOB_FILE_PATH
+      variable_value: gs://ubike-471005-data-lake/scripts/pyspark_weather_job.py
+    - variable_name: AUTOSCALING_POLICY_ID
+      variable_value: ubike-weather-policy
+      

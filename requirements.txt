@@ -5,3 +5,4 @@ dbt-bigquery
 requests
 apache-airflow-providers-dbt-cloud
 apache-airflow-providers-google
+apache-airflow-providers-slack
